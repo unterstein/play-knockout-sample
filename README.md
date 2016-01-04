@@ -26,6 +26,32 @@ The initial step using "activator new -> play-scala" template and writing the sk
 
 # Step 2 - Add dependencies
 
+Added the following dependencies:
+
+```
+  // persistence
+  "com.github.unterstein" %% "play-elasticplugin" % "0.1.0",
+  // utility
+  "com.google.code.gson" % "gson" % "2.4",
+  // webjars
+  "org.webjars" %% "webjars-play" % "2.4.0-2",
+  "org.webjars" % "bootstrap" % "3.3.6",
+  "org.webjars" % "bootswatch-flatly" % "3.3.5+4",
+  "org.webjars" % "jquery" % "2.1.4",
+  "org.webjars" % "font-awesome" % "4.5.0"
+  // webjars -> knockout
+  "org.webjars" % "knockout" % "3.4.0",
+  "org.webjars.bower" % "knockout-mapping" % "2.4.1",
+  "org.webjars.bower" % "knockout-validation" % "2.0.3" exclude("org.webjars.bower", "knockout")
+```
+
+I decided to add a bootstrap theme from bootswatch and add font-awesome. This dependencies are note required, but nice to have :-). As described in the intro, we use elasticsearch as data store with the https://github.com/unterstein/play-elasticplugin for easy usage. I publish this repo on my github page, therefore we need to add the following resolver:
+
+```
+resolvers += "unterstein.github.io" at "http://unterstein.github.io/repo"
+```
+
+
 # Step 3 - Init and use webjars and add some styling
 
 # Step 4 - Add (sample) data model and repositories (used spring-data-elasticsearch through my play-elasticplugin)
