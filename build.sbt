@@ -12,7 +12,7 @@ libraryDependencies ++= Seq(
   ws,
   specs2 % Test,
   // persistence
-  "com.github.unterstein" %% "play-elasticplugin" % "0.1.0",
+  "com.github.unterstein" %% "play-elasticplugin" % "0.2.0",
   // utility
   "com.google.code.gson" % "gson" % "2.4",
   // webjars

@@ -30,7 +30,7 @@ Added the following dependencies:
 
 ```
   // persistence
-  "com.github.unterstein" %% "play-elasticplugin" % "0.1.0",
+  "com.github.unterstein" %% "play-elasticplugin" % "0.2.0",
   // utility
   "com.google.code.gson" % "gson" % "2.4",
   // webjars
@@ -86,6 +86,100 @@ By this mechanism can be differed between the boostrap.css in the bootstrap arti
 
 
 # Step 4 - Add (sample) data model and repositories (used spring-data-elasticsearch through my play-elasticplugin)
+
+I decided to implement a simple guestbook. For the younger people: A guestbook was part of websites in the late 90s where visitors can post their stupid messages. Whatever ..
+
+I started by adding the needed classes for the play-elasticplugin:
+
+```
+  └── elastic
+     ├── models
+     |   └──> GuestPost.java
+     ├── repositories
+     |   └──> GuestPostRepository.java
+     └── services
+         └──> ElasticProvider.java
+```
+
+And i added the ElasticPlugin as @Inject to the ApplicationController:
+
+```
+  class ApplicationController @Inject()(val plugin: ElasticPlugin, val messagesApi: MessagesApi) extends Controller with I18nSupport {
+
+    def index = Action {
+      implicit request =>
+        val newPost = new GuestPost
+        newPost.headline = "Test Post #" + (ElasticProvider.get().guestPostRepository.count() + 1)
+        newPost.author = "Johannes"
+        newPost.postedDate = new Date()
+        newPost.text = "Hi there, this works!"
+        ElasticProvider.get().guestPostRepository.save(newPost)
+
+        Ok(views.html.index("Posts in your database: " + ElasticProvider.get().guestPostRepository.count()))
+    }
+
+  }
+```
+
+With each request to http://localhost:9000 a new GuestPost will be created and stored. After a few reloads i got
+
+```
+Posts in your database: 5
+```
+
+and by querying ElasticSearch directly through http://localhost:9200/guestposts/_search?pretty=true i got
+
+```
+{
+  "took" : 22,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : 5,
+    "max_score" : 1.0,
+    "hits" : [ {
+      "_index" : "guestposts",
+      "_type" : "post",
+      "_id" : "AVISLIkudi58A4YBR78E",
+      "_score" : 1.0,
+      "_source":{"id":null,"headline":"Test Post #1","text":"Hi there, this works!","postedDate":1452003854529,"author":"Johannes"}
+    }, {
+      "_index" : "guestposts",
+      "_type" : "post",
+      "_id" : "AVISLJN5di58A4YBR78F",
+      "_score" : 1.0,
+      "_source":{"id":null,"headline":"Test Post #2","text":"Hi there, this works!","postedDate":1452003857272,"author":"Johannes"}
+    }, {
+      "_index" : "guestposts",
+      "_type" : "post",
+      "_id" : "AVISLJZmdi58A4YBR78G",
+      "_score" : 1.0,
+      "_source":{"id":null,"headline":"Test Post #3","text":"Hi there, this works!","postedDate":1452003858022,"author":"Johannes"}
+    }, {
+      "_index" : "guestposts",
+      "_type" : "post",
+      "_id" : "AVISLJcYdi58A4YBR78H",
+      "_score" : 1.0,
+      "_source":{"id":null,"headline":"Test Post #4","text":"Hi there, this works!","postedDate":1452003858200,"author":"Johannes"}
+    }, {
+      "_index" : "guestposts",
+      "_type" : "post",
+      "_id" : "AVISLVYDdi58A4YBR78I",
+      "_score" : 1.0,
+      "_source":{"id":null,"headline":"Test Post #5","text":"Hi there, this works!","postedDate":1452003907075,"author":"Johannes"}
+    } ]
+  }
+}
+```
+
+perfect :-)
+
+So, let´s start with the actual knockout part :-)
+
 
 # Step 5 - Do some example knockout bindings with mappings plugin
 
