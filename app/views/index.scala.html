@@ -1,7 +1,13 @@
-@(message: String)
+@(message: String)(implicit request: play.api.mvc.Request[Any], messages: Messages)
 
-@main("Welcome to Play") {
+@main() {
 
-    @play20.welcome(message)
+  <div class="row">
+    <div class="col-xs-4 col-xs-offset-4">
+      <div class="well">
+        @message
+      </div>
+    </div>
+  </div>
 
 }

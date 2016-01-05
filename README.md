@@ -54,6 +54,37 @@ resolvers += "unterstein.github.io" at "http://unterstein.github.io/repo"
 
 # Step 3 - Init and use webjars and add some styling
 
+In step 2 we added a lot of webjars stuff to our build.sbt, this stuff must be included in our application now.
+
+To address the webjars assets through http, the following line must be added to the routes file:
+
+```
+GET        /webjars/*file        controllers.WebJarAssets.at(file)
+```
+
+
+The main work was done in the main.scala.html:
+
+```
+    <link rel="stylesheet" media="screen" href="@routes.WebJarAssets.at(WebJarAssets.locate("bootswatch-flatly", "bootstrap.min.css"))">
+    <link rel="stylesheet" media="screen" href="@routes.WebJarAssets.at(WebJarAssets.locate("font-awesome", "font-awesome.css"))">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+
+    ... some content here ...
+
+    <script src="@routes.WebJarAssets.at(WebJarAssets.locate("jquery.min.js"))"></script>
+    <script src="@routes.WebJarAssets.at(WebJarAssets.locate("bootswatch-flatly", "bootstrap.min.js"))"></script>
+    <script src="@routes.WebJarAssets.at(WebJarAssets.locate("knockout", "knockout.js"))"></script>
+    <script src="@routes.WebJarAssets.at(WebJarAssets.locate("knockout-mapping", "knockout.mapping.js"))"></script>
+    <script src="@routes.WebJarAssets.at(WebJarAssets.locate("knockout-validation", "knockout.validation.min.js"))"></script>
+    <script src="@routes.Assets.at("javascripts/main.js")"></script>
+```
+
+
+With WebJarAssets.locate("projectName", "fileName") the according file can be addressed which is inside the binary dependency to the relevant webjars artifact.
+By this mechanism can be differed between the boostrap.css in the bootstrap artifact and the bootswatch-flatly artifact, which is really cool.
+
+
 # Step 4 - Add (sample) data model and repositories (used spring-data-elasticsearch through my play-elasticplugin)
 
 # Step 5 - Do some example knockout bindings with mappings plugin
