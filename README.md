@@ -182,5 +182,112 @@ So, let´s start with the actual knockout part :-)
 
 
 # Step 5 - Do some example knockout bindings with mappings plugin
+Our app should look like an 90s guestbook. At the top of the page there should be the list of existing entries and at the bottom of the page there should be the form to add a new post.
+
+Our template needs the following objects to initialize:
+
+```
+@(posts: ListModel, form: Form[NewEntry])(implicit request: play.api.mvc.Request[Any], messages: Messages)
+```
+
+We bind the given guestbook posts to an ui with the following code:
+
+```
+# html
+  <div id="listmodel" data-bind="foreach: posts" data-model="@Json.toJson(posts)">
+    <div class="panel panel-default">
+      <div class="panel-heading" data-bind="text: headline"></div>
+      <div class="panel-body" data-bind="text: text"></div>
+      <div class="panel-footer">
+        @Messages("posted.by") <span data-bind="text: author"></span> @Messages("posted.at") <span data-bind="text: postedDate"></span>
+      </div>
+    </div>
+  </div>
+
+# javascript
+  var listmodel = $("#listmodel");
+  var listViewModel = ko.mapping.fromJS(listmodel.data("model"));
+  ko.applyBindings(listViewModel);
+```
+
+So we connect the playframework and knockout through json serialization and html data attributes. In step 2 we added the dependency to the ```knockout-mapping``` plugin. Through this plugin, the ```ko``` object is enhanced with the ```mapping``` functionality, shown in the javascript code.
+
+The other markup attributes are knockout standards. ```data-bind``` indicates, that knockout should do "something" with the given expression. ```foreach``` indicates an iteration (who would have thought it?) and ```text``` displayes a text in the current dom element.
+
+The formular to add a new post is not yet connected to knockout and is more or less plain playframework style, see:
+
+```
+<div id="formmodel" data-model="@Json.toJson(form.get)">
+    <div class="well">
+      @helper.form(routes.ApplicationController.create(), 'class -> "form-horizontal") {
+        <fieldset>
+          @if(form.hasErrors) {
+            <p class="alert alert-danger">
+            @form.errors.map { msg => @if(msg.key != "") {@Messages(msg.key): }@Messages(msg.message, msg.args: _*)<br/> }
+            </p>
+          }
+          <legend>@Messages("post.new")</legend>
+          <div class="form-group">
+            <label class="col-lg-2 control-label" for="headline">@Messages("headline")</label>
+            <div class="col-lg-10">
+              <input class="form-control" id="headline" name="headline" type="text" placeholder="@Messages("headline")">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-lg-2 control-label" for="text">@Messages("text")</label>
+            <div class="col-lg-10">
+              <textarea class="form-control" id="text" name="text" rows="10"></textarea>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-lg-2 control-label" for="author">@Messages("author")</label>
+            <div class="col-lg-10">
+              <input class="form-control" id="author" name="author" type="text" placeholder="@Messages("author")">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary pull-right">@Messages("save")</button>
+        </fieldset>
+      }
+    </div>
+  </div>
+```
+
+Last point i want to mention is, that currently the play.api.data.Form is filled with optionals and no validation:
+
+```
+  val entryForm: Form[NewEntry] = Form(
+    mapping(
+      "headline" -> optional(text),
+      "text" -> optional(text),
+      "author" -> optional(text)
+    )(NewEntry.apply)(NewEntry.unapply)
+  )
+```
+
+This leads to the following (not so pretty) "getOrElse(..)" code during guestbook post creation:
+
+```
+  def create = Action {
+    implicit request =>
+      entryForm.bindFromRequest().fold(
+        formWithErrors => Ok(views.html.index(allPosts, formWithErrors)),
+        value => {
+          val newPost = new GuestPost()
+          newPost.author = value.author.getOrElse("")
+          newPost.headline = value.headline.getOrElse("")
+          newPost.text = value.text.getOrElse("")
+          newPost.postedDate = new Date()
+          ElasticProvider.get().guestPostRepository.save(newPost)
+          Ok(views.html.index(allPosts, emptyForm))
+        }
+      )
+  }
+```
+
+We will discuss this issue in the next step. 
+
 
 # Step 6 - Add validation plugin and have even more fun

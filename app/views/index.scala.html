@@ -1,12 +1,50 @@
-@(message: String)(implicit request: play.api.mvc.Request[Any], messages: Messages)
+@(posts: ListModel, form: Form[NewEntry])(implicit request: play.api.mvc.Request[Any], messages: Messages)
 
 @main() {
-
-  <div class="row">
-    <div class="col-xs-4 col-xs-offset-4">
-      <div class="well">
-        @message
+  <div id="listmodel" data-bind="foreach: posts" data-model="@Json.toJson(posts)">
+    <div class="panel panel-default">
+      <div class="panel-heading" data-bind="text: headline"></div>
+      <div class="panel-body" data-bind="text: text"></div>
+      <div class="panel-footer">
+        @Messages("posted.by") <span data-bind="text: author"></span> @Messages("posted.at") <span data-bind="text: postedDate"></span>
       </div>
+    </div>
+  </div>
+
+  <div id="formmodel" data-model="@Json.toJson(form.get)">
+    <div class="well">
+      @helper.form(routes.ApplicationController.create(), 'class -> "form-horizontal") {
+        <fieldset>
+          @if(form.hasErrors) {
+            <p class="alert alert-danger">
+            @form.errors.map { msg => @if(msg.key != "") {@Messages(msg.key): }@Messages(msg.message, msg.args: _*)<br/> }
+            </p>
+          }
+          <legend>@Messages("post.new")</legend>
+          <div class="form-group">
+            <label class="col-lg-2 control-label" for="headline">@Messages("headline")</label>
+            <div class="col-lg-10">
+              <input class="form-control" id="headline" name="headline" type="text" placeholder="@Messages("headline")">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-lg-2 control-label" for="text">@Messages("text")</label>
+            <div class="col-lg-10">
+              <textarea class="form-control" id="text" name="text" rows="10"></textarea>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-lg-2 control-label" for="author">@Messages("author")</label>
+            <div class="col-lg-10">
+              <input class="form-control" id="author" name="author" type="text" placeholder="@Messages("author")">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary pull-right">@Messages("save")</button>
+        </fieldset>
+      }
     </div>
   </div>
 
